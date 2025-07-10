@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Streamlit RAG Frontend - app.py
+AI Compliance Co-Pilot - app.py
 
-A user-friendly Streamlit web application for interacting with the RAG system.
-Provides a clean interface for document search and question answering.
+A clean, modern Streamlit web application for navigating FSSAI regulations.
+Provides an intelligent assistant interface for compliance questions.
 
 Author: Python UI Developer
 Date: July 2025
@@ -12,13 +12,11 @@ Date: July 2025
 import streamlit as st
 import requests
 import json
-import time
-from typing import Dict, Any, Optional
 
 # Configure page settings
 st.set_page_config(
-    page_title="RAG Search Assistant",
-    page_icon="🔍",
+    page_title="AI Compliance Co-Pilot",
+    page_icon="🚀",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -26,34 +24,13 @@ st.set_page_config(
 # Constants
 API_BASE_URL = "http://127.0.0.1:8000"
 SEARCH_ENDPOINT = f"{API_BASE_URL}/search"
-HEALTH_ENDPOINT = f"{API_BASE_URL}/health"
-STATS_ENDPOINT = f"{API_BASE_URL}/stats"
 
-def check_backend_health() -> bool:
-    """Check if the backend server is running and healthy."""
-    try:
-        response = requests.get(HEALTH_ENDPOINT, timeout=5)
-        return response.status_code == 200
-    except requests.exceptions.RequestException:
-        return False
-
-def get_backend_stats() -> Optional[Dict[str, Any]]:
-    """Get statistics from the backend server."""
-    try:
-        response = requests.get(STATS_ENDPOINT, timeout=5)
-        if response.status_code == 200:
-            return response.json()
-    except requests.exceptions.RequestException:
-        pass
-    return None
-
-def search_documents(query: str, max_results: int = 5) -> Dict[str, Any]:
+def search_documents(query: str) -> dict:
     """
     Send search query to the backend API.
     
     Args:
         query: Search query string
-        max_results: Maximum number of results to retrieve
         
     Returns:
         Dictionary containing the API response or error information
@@ -61,7 +38,7 @@ def search_documents(query: str, max_results: int = 5) -> Dict[str, Any]:
     try:
         payload = {
             "query": query,
-            "max_results": max_results
+            "max_results": 5
         }
         
         response = requests.post(
@@ -85,7 +62,7 @@ def search_documents(query: str, max_results: int = 5) -> Dict[str, Any]:
     except requests.exceptions.ConnectionError:
         return {
             "success": False,
-            "error": "Could not connect to the backend server."
+            "error": "Could not connect to the backend server. Please ensure the API is running."
         }
     except requests.exceptions.Timeout:
         return {
@@ -98,149 +75,85 @@ def search_documents(query: str, max_results: int = 5) -> Dict[str, Any]:
             "error": f"Request failed: {str(e)}"
         }
 
-def display_answer(answer: str, sources: Optional[list] = None, query: str = ""):
-    """Display the search results in a formatted way."""
-    
-    # Display the answer
-    st.markdown("### 📝 Answer")
-    st.markdown(answer)
-    
-    # Display sources if available
-    if sources:
-        st.markdown("### 📚 Sources")
-        with st.expander("View source documents", expanded=False):
-            for i, source in enumerate(sources, 1):
-                st.markdown(f"**{i}.** {source}")
-    
-    # Display query for reference
-    if query:
-        st.markdown("### 🔍 Your Query")
-        st.info(f"**Query:** {query}")
-
 def main():
     """Main application function."""
     
-    # Page header
-    st.title("🔍 RAG Search Assistant")
-    st.markdown("Ask questions about your documents and get AI-powered answers!")
-    
-    # Sidebar for system status and settings
+    # Sidebar Content
     with st.sidebar:
-        st.header("🛠️ System Status")
-        
-        # Check backend health
-        if check_backend_health():
-            st.success("✅ Backend server is running")
-            
-            # Get and display stats
-            stats = get_backend_stats()
-            if stats:
-                st.markdown("### 📊 Statistics")
-                st.metric("Total Documents", stats.get("total_documents", "Unknown"))
-                st.markdown(f"**Embedding Model:** {stats.get('embedding_model', 'Unknown')}")
-                st.markdown(f"**LLM Model:** {stats.get('llm_model', 'Unknown')}")
-        else:
-            st.error("❌ Backend server is not responding")
-            st.markdown("Please ensure the FastAPI server is running on http://127.0.0.1:8000")
-        
-        st.divider()
-        
-        # Settings
-        st.header("⚙️ Settings")
-        max_results = st.slider(
-            "Maximum results to retrieve",
-            min_value=1,
-            max_value=10,
-            value=5,
-            help="Number of relevant documents to retrieve for context"
-        )
-        
-        st.divider()
-        
-        # Instructions
         st.header("💡 How to Use")
         st.markdown("""
-        1. Enter your question in the text input
-        2. Click 'Search' or press Enter
-        3. Wait for the AI to process your query
-        4. Review the answer and sources
+        1. In the main text area, type your compliance question about FSSAI regulations.
+        2. Press 'Enter' to submit your query to the AI.
+        3. Review the AI-generated answer that appears on the right.
         """)
         
-        st.markdown("### 🔥 Example Queries")
+        st.divider()
+        
+        st.header("❓ Example Queries")
         st.markdown("""
-        - "What are the main topics covered?"
-        - "Summarize the key findings"
-        - "What are the recommendations?"
-        - "Explain the methodology used"
+        * "What are the labeling requirements for packaged honey?"
+        * "Tell me the licensing requirements for a new dairy processing unit."
+        * "Summarize the regulations for food additives."
+        * "What does the law say about importing food products?"
         """)
+        
+        st.caption("Disclaimer: This AI provides summaries and should not be considered legal advice. Always consult official FSSAI documents for final decisions.")
     
-    # Main content area
-    col1, col2 = st.columns([3, 1])
+    # Main Area Content
+    st.title("AI Compliance Co-Pilot 🚀")
+    st.subheader("Your Intelligent Assistant for Navigating FSSAI Regulations")
     
-    with col1:
-        # Query input
-        query = st.text_input(
-            "Enter your question:",
-            placeholder="What would you like to know about your documents?",
-            help="Type your question and press Enter or click Search"
+    # Text input for user query
+    col_input, col_button = st.columns([4, 1])
+    
+    with col_input:
+        user_query = st.text_input(
+            "Enter your compliance question here...",
+            placeholder="What would you like to know about FSSAI regulations?",
+            help="Type your question and press Enter or click Search to get AI-powered answers"
         )
     
-    with col2:
-        st.markdown("<br>", unsafe_allow_html=True)  # Add some spacing
+    with col_button:
+        st.markdown("<br>", unsafe_allow_html=True)  # Add spacing to align with text input
         search_button = st.button("🔍 Search", type="primary", use_container_width=True)
     
-    # Process search when button is clicked or Enter is pressed
-    if search_button or (query and query.strip()):
-        if not query or not query.strip():
+    # Core Logic - trigger on either button click or Enter key press
+    if (user_query and user_query.strip()) or search_button:
+        if not user_query or not user_query.strip():
             st.warning("⚠️ Please enter a question to search.")
             return
+        # Create two columns for layout
+        col1, col2 = st.columns([1, 1])
         
-        # Check if backend is available
-        if not check_backend_health():
-            st.error("❌ Error: Could not connect to the backend server.")
-            st.markdown("Please ensure the FastAPI server is running on http://127.0.0.1:8000")
-            return
+        # First column - AI Answer
+        with col1:
+            with st.spinner("Searching standards and generating answer..."):
+                result = search_documents(user_query.strip())
+            
+            st.subheader("Answer:")
+            
+            if result["success"]:
+                response_data = result["data"]
+                st.markdown(response_data['answer'])
+            else:
+                st.error(f"Error: {result['error']}")
         
-        # Perform search with spinner
-        with st.spinner("Searching..."):
-            result = search_documents(query.strip(), max_results)
-        
-        # Display results
-        if result["success"]:
-            data = result["data"]
-            display_answer(
-                answer=data["answer"],
-                sources=data.get("sources"),
-                query=data["query"]
-            )
+        # Second column - Source Documents
+        with col2:
+            st.subheader("Source Documents:")
             
-            # Add some spacing and a success message
-            st.success("✅ Search completed successfully!")
-            
-        else:
-            st.error(f"❌ Error: {result['error']}")
-            
-            # Provide troubleshooting tips
-            with st.expander("💡 Troubleshooting Tips"):
-                st.markdown("""
-                **Common issues and solutions:**
+            if result["success"]:
+                response_data = result["data"]
+                sources = response_data.get("sources", [])
                 
-                1. **Backend not running**: Start the FastAPI server with `python backend/main.py`
-                2. **Port conflicts**: Ensure port 8000 is not being used by another application
-                3. **Network issues**: Check your internet connection and firewall settings
-                4. **API errors**: Check the backend logs for detailed error messages
-                """)
-    
-    # Footer
-    st.divider()
-    st.markdown(
-        """
-        <div style='text-align: center; color: #666; padding: 20px;'>
-            <p>🚀 Powered by LangChain, ChromaDB, and Google Generative AI</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+                if sources:
+                    st.markdown("**Referenced documents:**")
+                    for i, source in enumerate(sources, 1):
+                        st.markdown(f"**{i}.** {source}")
+                else:
+                    st.info("No source documents available for this query.")
+            else:
+                st.warning("Unable to retrieve source documents due to API error.")
 
 if __name__ == "__main__":
     main()
