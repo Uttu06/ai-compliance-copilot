@@ -1,3 +1,17 @@
+# Ignore Python's virtual environment
 /venv
+
+# Ignore sensitive environment variables
 .env
+
+# Ignore the local vector database
 /chroma_db
+
+# Ignore system-specific files
+.DS_Store
+
+# Ignore Python cache files
+__pycache__/
+
+# Ignore log files
+*.log
