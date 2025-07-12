@@ -1,6 +1,8 @@
 
 # AI Compliance Co-Pilot
 
+# Demo Video: https://youtu.be/sZWNKAgD-iw
+
 ## Introduction
 
 Compliance professionals spend countless hours sifting through dense regulatory documents, struggling to find relevant information buried in hundreds of pages of legal text. The AI Compliance Co-Pilot transforms this tedious process into an intelligent conversation. Our AI-powered framework uses advanced Retrieval-Augmented Generation (RAG) technology to provide instant, citable answers to compliance questions, turning complex regulatory documents into an accessible knowledge base that speaks your language.
